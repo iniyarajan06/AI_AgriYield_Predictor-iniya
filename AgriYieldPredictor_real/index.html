@@ -14,7 +14,10 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            /* subtle agricultural SVG overlay + gradient */
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g fill='%2322c55e' opacity='0.06'><path d='M100 10 C115 30 130 30 140 50 C120 45 110 65 100 80 C90 65 80 45 60 50 C70 30 85 30 100 10Z'/></g></svg>"), linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            background-repeat: repeat;
+            background-size: 220px 220px, cover;
             min-height: 100vh;
             color: #fff;
             overflow-x: hidden;
@@ -477,6 +480,11 @@
             }
         }
     </style>
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2canvas and jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <div class="particles" id="particles"></div>
@@ -609,13 +617,32 @@
                             🎯 Factor Impact Analysis
                         </h3>
                         <div id="factorsContainer"></div>
+                        <canvas id="factorsChart" style="max-height:280px; margin-top:16px;"></canvas>
                     </div>
 
-                    <div class="recommendations-section">
+                    <div style="margin-top:20px;">
+                        <h3 style="font-size: 1.1em; margin-bottom: 12px; color: #cbd5e1;">
+                            🔮 Future Yield Prediction
+                        </h3>
+                        <canvas id="futureChart" style="max-height:320px;"></canvas>
+                    </div>
+
+                    <div style="margin-top:20px;">
+                        <h3 style="font-size: 1.1em; margin-bottom: 12px; color: #cbd5e1;">🤖 AI Advice</h3>
+                        <div id="aiAdvice" class="recommendation-item" style="background: rgba(15,23,42,0.7);">
+                            <span id="aiAdviceText">AI will give tailored advice here after prediction.</span>
+                        </div>
+                    </div>
+
+                    <div class="recommendations-section" style="margin-top:18px;">
                         <div class="recommendations-title">
                             💡 Smart Recommendations
                         </div>
                         <div id="recommendationsContainer"></div>
+                        <div style="margin-top:14px; display:flex; gap:12px;">
+                            <button id="downloadReportBtn" class="predict-btn" style="width:auto; padding:12px 18px;">📥 Generate Report</button>
+                            <button id="downloadChartsBtn" class="predict-btn" style="width:auto; padding:12px 18px;">🖼️ Download Charts</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -635,6 +662,80 @@
             }
         }
         createParticles();
+
+        // Chart instances (persist across predictions)
+        let factorsChart = null;
+        let futureChart = null;
+
+        // Render factor bar chart using Chart.js
+        function renderFactorChart(factors) {
+            const ctx = document.getElementById('factorsChart').getContext('2d');
+            const labels = Object.keys(factors);
+            const values = labels.map(l => parseFloat(factors[l]));
+
+            if (factorsChart) {
+                factorsChart.data.labels = labels;
+                factorsChart.data.datasets[0].data = values;
+                factorsChart.update();
+                return;
+            }
+
+            factorsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Factor impact (%)',
+                        data: values,
+                        backgroundColor: 'rgba(34,197,94,0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+        }
+
+        // Render simple future yield projection (next 5 years)
+        function renderFutureChart(baseYield) {
+            const ctx = document.getElementById('futureChart').getContext('2d');
+            const years = [];
+            const values = [];
+            const now = new Date().getFullYear();
+            let current = baseYield;
+            for (let i = 0; i < 6; i++) {
+                years.push((now + i).toString());
+                // small random growth/decay for illustration
+                const drift = 1 + (Math.random() - 0.45) * 0.06; // -0.03..+0.09
+                current = Math.max(0, current * drift);
+                values.push(Math.round(current));
+            }
+
+            if (futureChart) {
+                futureChart.data.labels = years;
+                futureChart.data.datasets[0].data = values;
+                futureChart.update();
+                return;
+            }
+
+            futureChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: [{
+                        label: 'Projected yield (kg/ha)',
+                        data: values,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16,185,129,0.15)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+        }
 
         function predictYield(data) {
             const nitrogenScore = (data.nitrogen / 140) * 0.25;
@@ -783,7 +884,7 @@
 
                 const recsContainer = document.getElementById('recommendationsContainer');
                 recsContainer.innerHTML = '';
-                
+
                 recommendations.forEach(rec => {
                     const recHTML = `
                         <div class="recommendation-item">
@@ -793,6 +894,168 @@
                     `;
                     recsContainer.innerHTML += recHTML;
                 });
+
+                // Update AI advice (a short, contextual paragraph)
+                const aiAdviceText = document.getElementById('aiAdviceText');
+                const adviceLines = [];
+                adviceLines.push(`For ${data.cropType.charAt(0).toUpperCase() + data.cropType.slice(1)}, maintain balanced NPK and monitor soil pH.`);
+                if (data.nitrogen < 40) adviceLines.push('Nitrogen is low — consider urea or compost before planting.');
+                if (data.rainfall < 100) adviceLines.push('Low rainfall: prioritize efficient irrigation (drip/sprinkler).');
+                if (data.ph < 5.5) adviceLines.push('Soil is acidic — liming will help nutrient availability.');
+                adviceLines.push('Regular soil testing and split fertilizer applications improve results.');
+                aiAdviceText.textContent = adviceLines.join(' ');
+
+                // Render charts
+                try {
+                    renderFactorChart(result.factors);
+                    renderFutureChart(result.yield);
+                } catch (err) {
+                    console.warn('Chart rendering failed', err);
+                }
+
+                // Generate PDF report (includes charts)
+                document.getElementById('downloadReportBtn').onclick = async function() {
+                    try {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+                        const margin = 12;
+                        let y = margin;
+
+                        doc.setFontSize(18);
+                        doc.setTextColor(34, 197, 94);
+                        doc.text('AgriYield AI — Prediction Report', margin, y);
+                        y += 8;
+
+                        doc.setFontSize(10);
+                        doc.setTextColor(200,200,200);
+                        doc.text(`Generated: ${new Date().toLocaleString()}`, margin, y);
+                        y += 8;
+
+                        // Inputs
+                        doc.setTextColor(220,220,220);
+                        doc.setFontSize(12);
+                        doc.text('Inputs:', margin, y);
+                        y += 6;
+                        doc.setFontSize(10);
+                        const inputsText = `Crop: ${data.cropType}  |  N:${data.nitrogen}  P:${data.phosphorus}  K:${data.potassium}  Temp:${data.temperature}°C  Hum:${data.humidity}%  pH:${data.ph}  Rain:${data.rainfall}mm`;
+                        const splitInputs = doc.splitTextToSize(inputsText, 180 - margin*2);
+                        doc.text(splitInputs, margin, y);
+                        y += (splitInputs.length * 6) + 4;
+
+                        // Results
+                        doc.setFontSize(12);
+                        doc.text('Prediction:', margin, y);
+                        y += 6;
+                        doc.setFontSize(10);
+                        doc.setTextColor(240,240,240);
+                        doc.text(`Expected yield: ${result.yield} kg/ha`, margin, y);
+                        y += 6;
+                        doc.text(`Range: ${result.lowerBound} - ${result.upperBound} kg/ha`, margin, y);
+                        y += 6;
+                        doc.text(`Confidence: ${result.confidence}%`, margin, y);
+                        y += 8;
+
+                        // Recommendations (as text)
+                        doc.setFontSize(12);
+                        doc.setTextColor(220,220,220);
+                        doc.text('Recommendations:', margin, y);
+                        y += 6;
+                        doc.setFontSize(10);
+                        const recTexts = recommendations.map(r => `• ${r.text}`);
+                        const recSplit = doc.splitTextToSize(recTexts.join('\n'), 180 - margin*2);
+                        doc.text(recSplit, margin, y);
+                        y += (recSplit.length * 6) + 6;
+
+                        // Capture charts images
+                        const canvas1 = document.getElementById('factorsChart');
+                        const canvas2 = document.getElementById('futureChart');
+                        const img1 = canvas1.toDataURL('image/png', 1.0);
+                        const img2 = canvas2.toDataURL('image/png', 1.0);
+
+                        const pageWidth = doc.internal.pageSize.getWidth();
+                        const usableWidth = pageWidth - margin * 2;
+
+                        // add factor chart
+                        let img1Props = { w: 0, h: 0 };
+                        try {
+                            const c1 = canvas1;
+                            const mmPerPx = 0.264583; // px to mm
+                            img1Props.w = Math.min(usableWidth, c1.width * mmPerPx);
+                            img1Props.h = (c1.height * mmPerPx) * (img1Props.w / (c1.width * mmPerPx));
+                            if (y + img1Props.h > doc.internal.pageSize.getHeight() - margin) {
+                                doc.addPage();
+                                y = margin;
+                            }
+                            doc.addImage(img1, 'PNG', margin, y, img1Props.w, img1Props.h);
+                            y += img1Props.h + 8;
+                        } catch (e) {
+                            console.warn('Could not add factor chart to PDF', e);
+                        }
+
+                        // add future chart
+                        try {
+                            const c2 = canvas2;
+                            const mmPerPx = 0.264583;
+                            const w2 = Math.min(usableWidth, c2.width * mmPerPx);
+                            const h2 = (c2.height * mmPerPx) * (w2 / (c2.width * mmPerPx));
+                            if (y + h2 > doc.internal.pageSize.getHeight() - margin) {
+                                doc.addPage();
+                                y = margin;
+                            }
+                            doc.addImage(img2, 'PNG', margin, y, w2, h2);
+                            y += h2 + 8;
+                        } catch (e) {
+                            console.warn('Could not add future chart to PDF', e);
+                        }
+
+                        // AI advice
+                        if (y + 30 > doc.internal.pageSize.getHeight() - margin) {
+                            doc.addPage();
+                            y = margin;
+                        }
+                        doc.setFontSize(12);
+                        doc.setTextColor(220,220,220);
+                        doc.text('AI Advice:', margin, y);
+                        y += 6;
+                        doc.setFontSize(10);
+                        const advice = document.getElementById('aiAdviceText').textContent || '';
+                        const adviceSplit = doc.splitTextToSize(advice, usableWidth);
+                        doc.text(adviceSplit, margin, y);
+
+                        // save PDF
+                        const name = `agriyield_report_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`;
+                        doc.save(name);
+                    } catch (err) {
+                        alert('Failed to generate PDF: ' + (err.message || err));
+                    }
+                };
+
+                // Download charts as PNGs combined
+                document.getElementById('downloadChartsBtn').onclick = async function() {
+                    try {
+                        // snapshot factor chart and future chart
+                        const canvas1 = document.getElementById('factorsChart');
+                        const canvas2 = document.getElementById('futureChart');
+                        // create a combined canvas
+                        const w = Math.max(canvas1.width, canvas2.width);
+                        const h = canvas1.height + canvas2.height + 20;
+                        const combined = document.createElement('canvas');
+                        combined.width = w;
+                        combined.height = h;
+                        const ctx = combined.getContext('2d');
+                        ctx.fillStyle = '#0f172a';
+                        ctx.fillRect(0,0,w,h);
+                        ctx.drawImage(canvas1, 0, 0);
+                        ctx.drawImage(canvas2, 0, canvas1.height + 20);
+                        const url = combined.toDataURL('image/png');
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `agriyield_charts_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;
+                        a.click();
+                    } catch (err) {
+                        alert('Could not export charts: ' + err.message);
+                    }
+                };
 
                 btn.disabled = false;
                 btn.innerHTML = '<span>🚀 Predict Yield</span>';
