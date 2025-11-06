@@ -9,6 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
@@ -60,6 +61,8 @@
   .hero::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg, rgba(4,8,6,var(--hero-overlay-a,0.65)), rgba(4,8,6,var(--hero-overlay-b,0.45)));pointer-events:none;z-index:1}
   .hero > *{position:relative;z-index:2}
   .hero-left h1{font-size:36px;line-height:1.2;letter-spacing:-0.5px;margin:0 0 12px;text-shadow:0 0 30px rgba(46,204,113,0.25);position:relative}
+  /* prevent awkward mid-word breaks and ensure left-aligned, readable heading */
+  .hero-left h1{word-break:normal;overflow-wrap:normal;hyphens:none;text-align:left;padding-right:8px}
   .hero-left h1::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, rgba(46,204,113,0.1), transparent 70%);filter:blur(14px);z-index:-1}
   .hero-left p{color:#d6ead8;margin:0 0 16px}
     .cta-row{display:flex;gap:12px;align-items:center}
@@ -112,7 +115,18 @@
 
   /* decorative elements */
   #tractor{position:fixed;left:-260px;bottom:18px;z-index:40;pointer-events:none;opacity:0.95;transform:translate3d(0,0,0)}
-  .side-farmer{position:fixed;right:20px;bottom:20px;z-index:39;width:180px;height:auto;animation:floatAnimation 3s ease-in-out infinite}
+  .side-farmer{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:39;
+    width:180px;
+    height:auto;
+    animation:floatAnimation 3s ease-in-out infinite;
+    opacity: 1;
+    filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));
+    transition: opacity 0.3s ease;
+  }
   @keyframes floatAnimation {
     0% { transform:translateY(0px) }
     50% { transform:translateY(-10px) }
@@ -161,7 +175,8 @@
 
   <main>
   <!-- decorative elements -->
-  <img src="assets/ca59846685c58c8bb05d1d899a017276.jpg" alt="Farmer" class="side-farmer" id="sideFarmer">
+  <!-- Use the transparent PNG farmer image -->
+  <img src="assets/farmer-removebg-preview.png" alt="Farmer" class="side-farmer" id="sideFarmer">
     <div id="tractor" aria-hidden="true">
       <!-- Simple inline SVG tractor -->
       <svg viewBox="0 0 200 100" width="160" height="80" xmlns="http://www.w3.org/2000/svg">
@@ -179,7 +194,7 @@
     </div>
     <section id="home" class="hero">
       <div class="hero-left">
-        <h1 id="heroTitle">🌾 AgriPredict – Smart Farming with Artificial Intelligence</h1>
+        <h1 id="heroTitle">🌾 AgriPredict – Smart Farming with AI</h1>
         <p class="small">Empowering farmers with data-driven insights for a sustainable future.</p>
 
         <p style="margin-top:12px;color:#cfe9d6;line-height:1.5">AgriPredict is an AI-powered agriculture platform designed to help farmers, researchers, and policymakers predict crop yield, analyze weather patterns, and optimize farming decisions. Using advanced machine learning algorithms, climate analytics, and soil-crop data integration, AgriPredict transforms raw data into actionable intelligence for improved productivity and environmental sustainability.</p>
@@ -236,13 +251,18 @@
       <div style="margin-top:12px" class="small"><strong>🌾 Powered By</strong> — Python · Scikit-Learn · Pandas · Flask · HTML · CSS · JavaScript</div>
     </section>
 
-    <section id="features" style="max-width:1200px;margin:20px auto;padding:24px" class="glass reveal">
-      <h3 style="margin-bottom:16px">🌟 Advanced Features</h3>
+    <section id="features" style="max-width:1200px;margin:20px auto;padding:24px">
+      <h3 style="margin-bottom:24px">
+        <span style="color:var(--gold)">🌟</span> Advanced Features
+      </h3>
       
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px">
-        <div class="glass" style="padding:16px">
-          <h4 style="margin:0 0 8px;color:var(--green)">🤖 AI-Powered Analytics</h4>
-          <ul class="small" style="margin:0;padding-left:20px;line-height:1.6">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:24px">
+        <div class="feature-card" style="background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px;opacity:0;transform:translateY(20px);transition:transform 0.3s ease,box-shadow 0.3s ease">
+          <h4 style="margin:0 0 12px;color:var(--green);display:flex;align-items:center;gap:10px">
+            <i class="fas fa-robot"></i>
+            <span>AI-Powered Analytics</span>
+          </h4>
+          <ul class="feature-list small" style="margin:0;padding-left:20px;line-height:1.8">
             <li>Advanced yield forecasting using machine learning</li>
             <li>Real-time crop health monitoring</li>
             <li>Predictive analytics for optimal harvesting</li>
@@ -250,9 +270,12 @@
           </ul>
         </div>
         
-        <div class="glass" style="padding:16px">
-          <h4 style="margin:0 0 8px;color:var(--gold)">📊 Smart Dashboard</h4>
-          <ul class="small" style="margin:0;padding-left:20px;line-height:1.6">
+        <div class="feature-card" style="background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px;opacity:0;transform:translateY(20px);transition:transform 0.3s ease,box-shadow 0.3s ease">
+          <h4 style="margin:0 0 12px;color:var(--gold);display:flex;align-items:center;gap:10px">
+            <i class="fas fa-chart-line"></i>
+            <span>Smart Dashboard</span>
+          </h4>
+          <ul class="feature-list small" style="margin:0;padding-left:20px;line-height:1.8">
             <li>Interactive data visualization</li>
             <li>Real-time weather integration</li>
             <li>Customizable charts and reports</li>
@@ -260,9 +283,12 @@
           </ul>
         </div>
         
-        <div class="glass" style="padding:16px">
-          <h4 style="margin:0 0 8px;color:var(--green)">🎯 Precision Farming</h4>
-          <ul class="small" style="margin:0;padding-left:20px;line-height:1.6">
+        <div class="feature-card" style="background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px;opacity:0;transform:translateY(20px);transition:transform 0.3s ease,box-shadow 0.3s ease">
+          <h4 style="margin:0 0 12px;color:var(--green);display:flex;align-items:center;gap:10px">
+            <i class="fas fa-bullseye"></i>
+            <span>Precision Farming</span>
+          </h4>
+          <ul class="feature-list small" style="margin:0;padding-left:20px;line-height:1.8">
             <li>Smart fertilizer recommendations</li>
             <li>Soil health monitoring</li>
             <li>Water management optimization</li>
@@ -270,9 +296,12 @@
           </ul>
         </div>
         
-        <div class="glass" style="padding:16px">
-          <h4 style="margin:0 0 8px;color:var(--gold)">🔊 Accessibility</h4>
-          <ul class="small" style="margin:0;padding-left:20px;line-height:1.6">
+        <div class="feature-card" style="background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px;opacity:0;transform:translateY(20px);transition:transform 0.3s ease,box-shadow 0.3s ease">
+          <h4 style="margin:0 0 12px;color:var(--gold);display:flex;align-items:center;gap:10px">
+            <i class="fas fa-universal-access"></i>
+            <span>Accessibility</span>
+          </h4>
+          <ul class="feature-list small" style="margin:0;padding-left:20px;line-height:1.8">
             <li>Voice-assisted input and control</li>
             <li>Multi-language support</li>
             <li>Offline capability</li>
@@ -281,14 +310,23 @@
         </div>
       </div>
       
+      <div style="margin-top:30px;padding:20px" class="glass">
+        <h4 style="margin:0 0 12px;opacity:0" class="features-subtitle">💡 Why Choose Our Features?</h4>
+        <p class="small features-description" style="margin:0;line-height:1.6;opacity:0">
+          Our comprehensive feature set combines cutting-edge AI technology with user-friendly interfaces, 
+          making advanced agricultural analytics accessible to farmers of all technical levels. From precise 
+          yield predictions to smart resource management, we provide all the tools needed for modern, efficient farming.
+        </p>
+      </div>
+      
       <div style="margin-top:20px;padding:16px" class="glass">
         <h4 style="margin:0 0 8px">🏆 Why Choose Our Features?</h4>
         <p class="small" style="margin:0;line-height:1.6">Our comprehensive feature set combines cutting-edge AI technology with user-friendly interfaces, making advanced agricultural analytics accessible to farmers of all technical levels. From precise yield predictions to smart resource management, we provide all the tools needed for modern, efficient farming.</p>
       </div>
     </section>
 
-    <section id="dashboard" style="padding:20px" aria-label="Dashboard">
-      <div id="dashboard" class="reveal">
+    <section id="dashboard" class="reveal" style="padding:20px" aria-label="Dashboard">
+      <div class="dashboard-container">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px">
           <div style="display:flex;align-items:center;gap:12px">
             <div class="tabs" id="tabs">
@@ -311,10 +349,46 @@
           <div class="tab-pane" id="inputs" style="display:block">
             <div class="grid-2">
               <div>
-                <label class="small">Crop</label>
-                <input id="cropInput" class="input" placeholder="e.g., rice" />
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                  <div style="flex:1.5">
+                    <label class="small">Crop Type</label>
+                    <select id="cropInput" class="input">
+                      <option value="rice">Rice</option>
+                      <option value="wheat">Wheat</option>
+                      <option value="maize">Maize</option>
+                      <option value="sugarcane">Sugarcane</option>
+                      <option value="cotton">Cotton</option>
+                      <option value="pulses">Pulses</option>
+                    </select>
+                  </div>
+                  <div style="flex:1">
+                    <label class="small">Season</label>
+                    <select id="seasonInput" class="input">
+                      <option value="kharif">Kharif</option>
+                      <option value="rabi">Rabi</option>
+                      <option value="zaid">Zaid</option>
+                    </select>
+                  </div>
+                </div>
 
-                <div style="display:flex;gap:8px;margin-top:10px">
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                  <div style="flex:1">
+                    <label class="small">Soil Type</label>
+                    <select id="soilType" class="input">
+                      <option value="loamy">Loamy</option>
+                      <option value="sandy">Sandy</option>
+                      <option value="clay">Clay</option>
+                      <option value="black">Black</option>
+                      <option value="red">Red</option>
+                    </select>
+                  </div>
+                  <div style="flex:1">
+                    <label class="small">Soil pH</label>
+                    <input id="phVal" type="number" class="input" value="6.5" min="0" max="14" step="0.1" />
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:8px;margin-bottom:12px">
                   <div style="flex:1">
                     <label class="small">Nitrogen (N)</label>
                     <input id="nVal" type="number" class="input" value="50" />
@@ -329,10 +403,14 @@
                   </div>
                 </div>
 
-                <div style="display:flex;gap:8px;margin-top:12px">
+                <div style="display:flex;gap:8px;margin-bottom:12px">
                   <div style="flex:1">
                     <label class="small">Temperature (°C)</label>
                     <input id="tempVal" type="number" class="input" value="25" />
+                  </div>
+                  <div style="flex:1">
+                    <label class="small">Humidity (%)</label>
+                    <input id="humidityVal" type="number" class="input" value="65" min="0" max="100" />
                   </div>
                   <div style="flex:1">
                     <label class="small">Rainfall (mm)</label>
@@ -340,10 +418,27 @@
                   </div>
                 </div>
 
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                  <div style="flex:1">
+                    <label class="small">Irrigation Method</label>
+                    <select id="irrigationType" class="input">
+                      <option value="drip">Drip Irrigation</option>
+                      <option value="sprinkler">Sprinkler</option>
+                      <option value="flood">Flood Irrigation</option>
+                      <option value="furrow">Furrow</option>
+                    </select>
+                  </div>
+                  <div style="flex:1">
+                    <label class="small">Land Area (Acres)</label>
+                    <input id="areaVal" type="number" class="input" value="1" min="0.1" step="0.1" />
+                  </div>
+                </div>
+
                 <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
                   <div class="mic" id="micBtn" title="Voice input (crop)"><i class="fa fa-microphone" style="color:#06160f"></i></div>
                   <button class="btn" id="runPredict">Run Predict</button>
                   <button class="btn btn-ghost" id="resetBtn">Reset</button>
+                  <button class="btn btn-ghost" id="savePreset" title="Save current values as preset"><i class="fa fa-save"></i></button>
                 </div>
 
               </div>
@@ -388,9 +483,11 @@
 
           <!-- Future -->
           <div class="tab-pane" id="future" style="display:none">
-            <div class="glass">
-              <div class="small">Future Trends (2025 - 2030)</div>
-              <div style="margin-top:12px"><canvas id="futureTrend" height="200"></canvas></div>
+            <div class="glass" style="background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02))">
+              <div class="small" style="margin-bottom:10px">Future Trends (2025 - 2030)</div>
+              <div style="height:220px;position:relative;margin:0 -10px">
+                <canvas id="futureTrend"></canvas>
+              </div>
             </div>
           </div>
 
@@ -418,7 +515,21 @@
         </ul>
         <div style="display:flex;align-items:center;gap:8px;margin-top:16px">
           <i class="fa fa-envelope" style="color:var(--green)"></i>
-          <a href="mailto:iniyarajan06@gmail.com" style="color:var(--green);text-decoration:none" class="small">iniyarajan06@gmail.com</a>
+          <a href="mailto:iniyarajan06@gmail.com" style="color:var(--green);text-decoration:none;display:flex;align-items:center;gap:8px;font-size:15px">
+            <span>iniyarajan06@gmail.com</span>
+            <i class="fa fa-external-link-alt" style="font-size:12px"></i>
+          </a>
+        </div>
+        <!-- Social Links -->
+        <div style="display:flex;align-items:center;gap:16px;margin-top:16px">
+          <a href="https://github.com/iniyarajan06" target="_blank" style="color:var(--green);text-decoration:none;display:flex;align-items:center;gap:6px" class="small">
+            <i class="fab fa-github"></i>
+            <span>GitHub</span>
+          </a>
+          <a href="https://linkedin.com/in/iniyarajan06" target="_blank" style="color:var(--green);text-decoration:none;display:flex;align-items:center;gap:6px" class="small">
+            <i class="fab fa-linkedin"></i>
+            <span>LinkedIn</span>
+          </a>
         </div>
       </div>
     </section>
@@ -441,11 +552,41 @@ for(let i=0;i<40;i++){const d=document.createElement('div');d.className='particl
 const miniCtx = document.getElementById('miniChart').getContext('2d');
 new Chart(miniCtx,{type:'line',data:{labels:[1,2,3,4,5,6],datasets:[{data:[3200,3300,3100,3350,3400,3500],borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.08)',tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},elements:{point:{radius:0}},scales:{x:{display:false},y:{display:false}}}})
 
-// navigation tracker + smooth scroll
+// Enhanced navigation with smooth scroll and animations
 const navLinks = document.querySelectorAll('#navList a');
 const tracker = document.getElementById('navTracker');
-function updateTracker(el){const r=el.getBoundingClientRect();const parent=document.querySelector('header .nav');const left=r.left-parent.getBoundingClientRect().left;tracker.style.left=(left)+'px';tracker.style.width=(r.width)+'px'}
-navLinks.forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();document.querySelector('#'+a.dataset.target).scrollIntoView({behavior:'smooth',block:'start'});updateTracker(a)})})
+
+function updateTracker(el) {
+  const r = el.getBoundingClientRect();
+  const parent = document.querySelector('header .nav');
+  const left = r.left - parent.getBoundingClientRect().left;
+  gsap.to(tracker, {
+    left: left,
+    width: r.width,
+    duration: 0.4,
+    ease: "power2.out"
+  });
+}
+
+navLinks.forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector('#' + a.dataset.target);
+    
+    // Animate nav tracker
+    updateTracker(a);
+    
+    // Scroll with animation
+    gsap.to(window, {
+      duration: 1,
+      scrollTo: {
+        y: target,
+        offsetY: 20
+      },
+      ease: "power2.inOut"
+    });
+  });
+});
 window.addEventListener('load',()=>{ updateTracker(navLinks[0]); 
   // brief tractor drive on first load to restore playful transition behavior
   try{ setTimeout(()=>{ animateTractor(); }, 700); }catch(e){}
@@ -503,7 +644,49 @@ const resCtx = document.getElementById('resultsChart').getContext('2d');
 const resultsChart = new Chart(resCtx,{type:'bar',data:{labels:['A','B','C','D','E'],datasets:[{label:'Yield factors',data:[10,20,15,25,18],backgroundColor:'#2ecc71'}]},options:{plugins:{legend:{display:false}}}})
 
 const futureCtx = document.getElementById('futureTrend').getContext('2d');
-const futureChart = new Chart(futureCtx,{type:'line',data:{labels:['2025','2026','2027','2028','2029','2030'],datasets:[{label:'Projected yield',data:[3300,3400,3550,3600,3700,3850],borderColor:'#f1c40f',backgroundColor:'rgba(241,196,15,0.08)',tension:0.3,fill:true}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}})
+const futureChart = new Chart(futureCtx, {
+  type: 'line',
+  data: {
+    labels: ['2025','2026','2027','2028','2029','2030'],
+    datasets: [{
+      label: 'Projected yield',
+      data: [3300,3400,3550,3600,3700,3850],
+      borderColor: '#f1c40f',
+      backgroundColor: 'rgba(241,196,15,0.1)',
+      tension: 0.3,
+      fill: true,
+      borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: false,
+        grid: {
+          color: 'rgba(255,255,255,0.05)'
+        },
+        ticks: {
+          color: '#cfe9d6'
+        }
+      },
+      x: {
+        grid: {
+          color: 'rgba(255,255,255,0.05)'
+        },
+        ticks: {
+          color: '#cfe9d6'
+        }
+      }
+    }
+  }
+})
 
 // run predict - simple heuristic based on landing UI
 function runPredict(){const n=Number(document.getElementById('nVal').value);const p=Number(document.getElementById('pVal').value);const k=Number(document.getElementById('kVal').value);const temp=Number(document.getElementById('tempVal').value);const rain=Number(document.getElementById('rainVal').value);
@@ -543,8 +726,189 @@ if('webkitSpeechRecognition' in window || 'SpeechRecognition' in window){ const 
 // smooth scroll getStarted -> dashboard
 document.getElementById('getStarted').addEventListener('click',()=>{document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})})
 
-// reveal on scroll
-gsap.utils.toArray('.reveal').forEach(elem=>{gsap.from(elem,{opacity:0,y:30,duration:0.8,scrollTrigger:{trigger:elem, start:'top 80%'}})})
+// Enhanced section transitions with unique animations
+function setupSectionAnimations() {
+  // Home to About transition
+  ScrollTrigger.create({
+    trigger: "#about",
+    start: "top center",
+    onEnter: () => {
+      gsap.to("#sideFarmer", {
+        rotation: 360,
+        scale: 1.2,
+        duration: 0.8,
+        ease: "back.out(1.7)",
+        onComplete: () => gsap.to("#sideFarmer", {scale: 1, duration: 0.3})
+      });
+      animateTractor();
+    }
+  });
+
+  // About to Features transition
+  ScrollTrigger.create({
+    trigger: "#features",
+    start: "top center",
+    onEnter: () => {
+      gsap.from(".glass", {
+        scale: 0.5,
+        opacity: 0,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: "elastic.out(1, 0.8)"
+      });
+      gsap.to("#sideFarmer", {
+        y: -30,
+        duration: 0.4,
+        yoyo: true,
+        repeat: 1,
+        ease: "power2.inOut"
+      });
+      animateTractor();
+    }
+  });
+
+  // Features to Dashboard transition
+  ScrollTrigger.create({
+    trigger: "#dashboard",
+    start: "top center",
+    onEnter: () => {
+      gsap.from(".tab", {
+        x: -100,
+        opacity: 0,
+        duration: 0.4,
+        stagger: 0.1,
+        ease: "back.out(1.7)"
+      });
+      gsap.to("#sideFarmer", {
+        x: -40,
+        duration: 0.3,
+        yoyo: true,
+        repeat: 1,
+        ease: "power1.inOut"
+      });
+      animateTractor();
+    }
+  });
+
+  // Dashboard to Contact transition
+  ScrollTrigger.create({
+    trigger: "#contact",
+    start: "top center",
+    onEnter: () => {
+      gsap.from("#contact .glass", {
+        scale: 0.8,
+        opacity: 0,
+        rotationY: 45,
+        duration: 0.8,
+        ease: "power2.out"
+      });
+      gsap.to("#sideFarmer", {
+        scale: 1.3,
+        duration: 0.3,
+        yoyo: true,
+        repeat: 1,
+        ease: "power2.inOut"
+      });
+      animateTractor();
+    }
+  });
+}
+
+// Enhanced reveal animations
+gsap.utils.toArray('.reveal').forEach(elem => {
+  gsap.from(elem, {
+    opacity: 0,
+    y: 30,
+    duration: 0.8,
+    scrollTrigger: {
+      trigger: elem,
+      start: 'top 80%'
+    }
+  });
+});
+
+// Simplified feature cards animation
+function setupFeatures() {
+  const features = document.querySelectorAll('.feature-card');
+  
+  features.forEach((card, index) => {
+    // Set initial state
+    gsap.set(card, {
+      opacity: 0,
+      y: 20
+    });
+
+    // Create scroll trigger for each card
+    ScrollTrigger.create({
+      trigger: card,
+      start: 'top 80%',
+      onEnter: () => {
+        gsap.to(card, {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          delay: index * 0.15,
+          ease: 'power2.out'
+        });
+        
+        // Animate list items
+        card.querySelectorAll('li').forEach((item, i) => {
+          gsap.to(item, {
+            opacity: 1,
+            x: 0,
+            duration: 0.4,
+            delay: (index * 0.15) + (i * 0.1),
+            ease: 'power2.out'
+          });
+        });
+      }
+    });
+
+    // Add hover effects
+    card.addEventListener('mouseenter', () => {
+      gsap.to(card, {
+        scale: 1.02,
+        boxShadow: '0 20px 50px rgba(46,204,113,0.15)',
+        duration: 0.3
+      });
+    });
+
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card, {
+        scale: 1,
+        boxShadow: 'none',
+        duration: 0.3
+      });
+    });
+  });
+}
+
+// Initialize features
+window.addEventListener('DOMContentLoaded', () => {
+  setupFeatures();
+  
+  // Add extra hover effect to contact links
+  document.querySelectorAll('#contact a').forEach(link => {
+    link.addEventListener('mouseenter', () => {
+      gsap.to(link, {
+        scale: 1.05,
+        color: '#3BD16F',
+        duration: 0.3
+      });
+    });
+    
+    link.addEventListener('mouseleave', () => {
+      gsap.to(link, {
+        scale: 1,
+        color: 'var(--green)',
+        duration: 0.3
+      });
+    });
+  });
+});
+
+// Initialize section animations
+setupSectionAnimations();
 
 // mobile hamburger toggle
 const hamb=document.getElementById('hamb'); hamb.addEventListener('click',()=>{ const navul=document.querySelector('#navList'); if(navul.style.display==='flex'){navul.style.display='none'}else{navul.style.display='flex'; navul.style.flexDirection='column'; navul.style.background='rgba(255,255,255,0.02)'; navul.style.padding='10px'; navul.style.position='absolute'; navul.style.right='20px'; navul.style.top='60px'} })
@@ -568,7 +932,7 @@ document.querySelectorAll('.chart-wrap, .glass canvas').forEach(c=>{ c.style.max
   sideFarmerImg.addEventListener('error', ()=>{
     try{
       const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
-      svg.setAttribute('viewBox','0 0 64 64');
+      svg.setAttribute('viewBox','0 0 200 300');
       svg.setAttribute('width','180');
       svg.setAttribute('height','auto');
       svg.style.width = sideFarmerImg.style.width || '180px';
@@ -577,7 +941,30 @@ document.querySelectorAll('.chart-wrap, .glass canvas').forEach(c=>{ c.style.max
       svg.style.right = sideFarmerImg.style.right || '20px';
       svg.style.bottom = sideFarmerImg.style.bottom || '20px';
       svg.style.zIndex = '39';
-      svg.innerHTML = '<circle cx="32" cy="14" r="10" fill="#2ecc71"/><rect x="12" y="28" width="40" height="26" rx="6" fill="#14532d"/>';
+      svg.innerHTML = `
+        <g transform="translate(20,20)">
+          <!-- Cap and head -->
+          <path d="M80 60 Q85 40 100 35 Q115 30 125 40 L130 55 Q125 65 115 68 L80 60Z" fill="#90caf9"/>
+          <path d="M85 60 Q90 80 100 85 Q110 90 120 85 Q125 75 130 55" fill="#d4a373"/>
+          <!-- Face details -->
+          <path d="M95 65 Q100 67 105 65" fill="none" stroke="#602d1a" stroke-width="2"/>
+          <path d="M110 60 Q105 68 100 70 Q95 68 90 60" fill="#602d1a"/>
+          <!-- White clothes -->
+          <path d="M85 85 L70 240 Q100 245 130 240 L115 85 Q100 90 85 85Z" fill="#f5f5f5"/>
+          <!-- Tool over shoulder -->
+          <path d="M130 100 L180 60" stroke="#8b4513" stroke-width="8" stroke-linecap="round"/>
+          <path d="M175 55 L185 65" fill="none" stroke="#666" stroke-width="4"/>
+          <!-- Arms -->
+          <path d="M85 90 Q75 100 70 120" fill="none" stroke="#f5f5f5" stroke-width="15"/>
+          <path d="M115 90 Q135 95 145 85" fill="none" stroke="#f5f5f5" stroke-width="15"/>
+          <!-- Legs -->
+          <path d="M85 240 L75 280 Q90 285 100 280 L95 240" fill="#f5f5f5"/>
+          <path d="M105 240 L115 280 Q125 285 135 280 L120 240" fill="#f5f5f5"/>
+          <!-- Sandals -->
+          <path d="M70 280 Q85 285 95 280" fill="none" stroke="#8b4513" stroke-width="3"/>
+          <path d="M115 280 Q125 285 140 280" fill="none" stroke="#8b4513" stroke-width="3"/>
+        </g>
+      `;
       sideFarmerImg.replaceWith(svg);
     }catch(e){ sideFarmerImg.style.display='none' }
   });
@@ -621,7 +1008,8 @@ document.querySelectorAll('.chart-wrap, .glass canvas').forEach(c=>{ c.style.max
 (function(){
   const img = document.querySelector('.side-farmer');
   if(!img) return;
-  const candidates = ['assets/farmer.png','assets/farmer.jpg','assets/farmer.svg'];
+  // use the transparent PNG as primary image
+  const candidates = ['assets/farmer-removebg-preview.png', 'assets/farmer.svg'];
   let idx = 0;
   function tryNext(){
     if(idx >= candidates.length) return;
